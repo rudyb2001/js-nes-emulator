@@ -30,14 +30,17 @@ The original guide for this project is written entirely in Rust. It might be int
 
 ## Website
 TODO - Create decent website with HTML/CSS
+
 TODO - Create file uploading mechanism
 
 ## Opcode Reader
 TODO - Create CPU object with registers and callable functions
+
 TODO - Emulate all official opcodes
 
 ## Cartridge Reader
 TODO - Create ROM parser
+
 TODO - Emulate unofficial opcodes
 
 ## PPU Display
