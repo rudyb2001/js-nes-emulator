@@ -5,10 +5,11 @@ The goal of this project is to create an NES emulator website where people can l
 I am following most of [this website](https://bugzmanov.github.io/nes_ebook/chapter_3_4.html) for building the emulation part of the website.
 
 ## Plan
-1. Create base website with file loader
-2. Create a working JavaScript Opcode reader (official opcodes)
-3. Create the bus and cartridge reader (unofficial opcodes)
-4. Emulate the PPU display
+This is a tentative schedule for the project. Getting it done within 3.5 months would be pretty cool, but I have no idea how long this might take. Hopefully the timelines are generous.
+1. 10/01/2022 - Create base website with file loader
+2. 10/15/2022 - Create a working JavaScript Opcode reader (official opcodes)
+3. 11/01/2022 - Create the bus and cartridge reader (unofficial opcodes)
+4. 12/??/2022 - Emulate the PPU display
 
 ## Resources
 ### NES guides
@@ -22,6 +23,7 @@ I am following most of [this website](https://bugzmanov.github.io/nes_ebook/chap
 
 ### Web development
 [The Odin Project](https://www.theodinproject.com/)
+[Auxiliary snake game project](https://www.educative.io/blog/javascript-snake-game-tutorial)
 
 ## Extra tidbits
 While we don't need to know exactly how NES games need to be structured for this project, it might be an interesting aside to look at how NES games are structured and how to build them.
