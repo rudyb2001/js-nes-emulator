@@ -14,15 +14,22 @@ This is a tentative schedule for the project. Getting it done within 3.5 months 
 ## Resources
 ### NES guides
 [Rust emulator guide](https://bugzmanov.github.io/nes_ebook/chapter_3_4.html)
+
 [JavaScript Web Emulator](https://jsnes.org/)
+
 [GitHub code](https://github.com/bfirsh/jsnes)
+
 [Blog post overview](https://www.middle-engine.com/blog/posts/2020/06/22/programming-the-nes-the-nes-in-overview)
+
 [Blog post MOS 6502 CPU](https://www.middle-engine.com/blog/posts/2020/06/23/programming-the-nes-the-6502-in-detail)
+
 [MOS 650X Programming Manual](http://archive.6502.org/books/mcs6500_family_programming_manual.pdf)
+
 [Cool YouTube channel about NES architecture](https://www.youtube.com/c/NesHacker)
 
 ### Web development
 [The Odin Project](https://www.theodinproject.com/)
+
 [Auxiliary snake game project](https://www.educative.io/blog/javascript-snake-game-tutorial)
 
 ## Extra tidbits
