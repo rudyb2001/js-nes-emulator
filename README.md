@@ -2,7 +2,7 @@
 ## Description
 The goal of this project is to create an NES emulator website where people can load in ROM files and play them directly through their browser. This involves emulating an NES console CPU to read raw assembly bits as opcodes and translate them into JS instructions.
 
-I am following most of [this guide](https://bugzmanov.github.io/nes_ebook/chapter_3_4.html) for building the emulation part of the website.
+I am following most of [this guide](https://bugzmanov.github.io/nes_ebook/chapter_1.html) for building the emulation part of the website.
 
 ## Plan
 This is a tentative schedule for the project. Getting it done within 3.5 months would be pretty cool, but I have no idea how long this might take. Hopefully the timelines are generous.
@@ -16,7 +16,8 @@ This is a tentative schedule for the project. Getting it done within 3.5 months 
 ### Onboarding
 1. Set up [Github Desktop](https://docs.github.com/en/desktop/installing-and-configuring-github-desktop/overview/getting-started-with-github-desktop) on your computer
 2. Read the first 2 chapters of the [Emulator Guide](https://bugzmanov.github.io/nes_ebook/chapter_1.html)
-3. Read through the current codebase
+3. Brush up on JavaScript [here (snake game)](https://www.educative.io/blog/javascript-snake-game-tutorial) and [here (W3Schools)](https://www.w3schools.com/js/default.asp)
+4. Read through the current codebase
 
 ### NES guides
 [Rust emulator guide](https://bugzmanov.github.io/nes_ebook/chapter_1.html)
