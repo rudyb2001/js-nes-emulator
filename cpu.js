@@ -1,10 +1,10 @@
-class cpu {
+class CPU {
     constructor() {
         this.program = [];
         this.memory = [];   // May make this it's own class
 
         this.pc = 0;
-        this.accumulator = 0;
+        this.a = 0;
         this.x = 0;
         this.y = 0;
         this.flag = {
@@ -29,6 +29,10 @@ class cpu {
         }
     }
 
+    loadProgram(program) {
+        this.program = program;
+    }
+
     getInstruction(i) {
         if (this.program.length == 0) {
             return null;
@@ -37,6 +41,14 @@ class cpu {
             return null;
         }
         return this.program[i];
+    }
+
+    printRegisters() {
+        console.log(`Program Counter: ${this.pc}`);
+        console.log(`Accumulator: ${this.a}`);
+        console.log(`X Register: ${this.x}`);
+        console.log(`Y Register: ${this.y}`);
+        console.log(`Flags: ${this.flags}`);
     }
 
     // Check if number is beyond bounds of 8-bit integer range
@@ -48,22 +60,30 @@ class cpu {
     shrink8bit(num) {
         // Shift last byte up 3 bytes, removing all information past that
         // Shift back down, only last bytes remaining (sign extended)
-        return num << 24 >> 24;
+        return (num << 24) >> 24;
     }
 
     // Add with carry
     // TODO - Finish instruction for all addressing modes
     adc(opcode) {
+        console.log(opcode);
         if (opcode === "69") {  // Immediate
             //Get imm value
             this.pc += 1;
-            let imm = getInstruction(this.pc);
+            let imm = this.getInstruction(this.pc);
+            console.log(`Imm = ${imm}`);
 
             // Add imm + carry to accumulator
-            this.a += imm + this.flag.c;
-            this.flag.c = this.isOverflow(this.a);   // Cast boolean to int
+            this.a += imm + +this.flag.c;           // Cast boolean to int
+            this.flag.c = this.isOverflow(this.a);
             this.flag.z = this.a === 0;
+
+            console.log(`Acc = ${this.a}`);
             this.a = this.shrink8bit(this.a);
+            console.log(`Acc = ${this.a}`);
         }
     }
 }
+
+//export default class { cpu };
+module.exports = CPU;
