@@ -12,8 +12,14 @@ This is a tentative schedule for the project. Getting it done within 3.5 months 
 4. 12/??/2022 - Emulate the PPU display
 
 ## Resources
+
+### Onboarding
+1. Set up [Github Desktop](https://docs.github.com/en/desktop/installing-and-configuring-github-desktop/overview/getting-started-with-github-desktop) on your computer
+2. Read the first 2 chapters of the [Emulator Guide](https://bugzmanov.github.io/nes_ebook/chapter_1.html)
+3. Read through the current codebase
+
 ### NES guides
-[Rust emulator guide](https://bugzmanov.github.io/nes_ebook/chapter_3_4.html)
+[Rust emulator guide](https://bugzmanov.github.io/nes_ebook/chapter_1.html)
 
 [JavaScript Web Emulator](https://jsnes.org/)
 
