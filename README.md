@@ -17,7 +17,7 @@ This is a tentative schedule for the project. Getting it done within 3.5 months 
 1. Set up [Github Desktop](https://docs.github.com/en/desktop/installing-and-configuring-github-desktop/overview/getting-started-with-github-desktop) on your computer
 2. Read the first 2 chapters of the [Emulator Guide](https://bugzmanov.github.io/nes_ebook/chapter_1.html)
 3. Brush up on JavaScript [here (snake game)](https://www.educative.io/blog/javascript-snake-game-tutorial) and [here (W3Schools)](https://www.w3schools.com/js/default.asp)
-4. Read through the current codebase
+4. Read through the current codebase (don't be scared of Rust)
 
 ### NES guides
 [Rust emulator guide](https://bugzmanov.github.io/nes_ebook/chapter_1.html)
