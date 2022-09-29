@@ -1,8 +1,9 @@
-struct CPU {
+mod memory;
 
-    //TODO: DETERMINE WHETHER MEMORY SLOTS HAVE 8 OR 16 BITS
-    program: Vec<u8>, 
-    memory: Vec<u8>,
+use memory::MemoryMap;
+
+struct CPU {
+    memory: MemoryMap,
 
     pc: u16,
     accumulator: u8,
@@ -23,14 +24,11 @@ struct CPU {
 }
 
 impl CPU {
-    fn get_instruction(&self, index: usize) -> Option<u8> {
-        match self.program.get(index) {
-            Some(a) => Some(*a),
-            None => None
-        }
+    fn get_instruction(&self, index: u16) -> u8 {
+        self.memory.read_byte(index)
     }
 
-    fn process_instruction(instruction: Vec<u8>) {
+    fn process_instruction(instruction: u8) {
         match instruction {
             _ => todo!()
         }
