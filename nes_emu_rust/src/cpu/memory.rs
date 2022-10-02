@@ -1,8 +1,15 @@
+#[cfg(test)]
+mod memory_testers;
+
 pub struct MemoryMap {
     map: [u8; 0xFFFF],
 }
 
 impl MemoryMap {
+    pub fn new() -> Self {
+        MemoryMap { map: [0; 0xFFFF] }
+    }
+
     // returns the byte at the given memory address
     pub fn read_byte(&self, addr: u16) -> u8 {
         self.map[addr as usize]
