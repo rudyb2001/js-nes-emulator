@@ -40,6 +40,9 @@ impl MemoryMap {
 
     // loads program into the program area of memory
     pub fn load_program(&mut self, program: Vec<u8>) {
+        if(program.len() > 0xFFFF - 0x8000) {
+            panic!("Program size exceeds 0x7FFF!");
+        }
         self.map[0x8000 .. (0x8000 + program.len())].copy_from_slice(&program[..]);
     }
 }

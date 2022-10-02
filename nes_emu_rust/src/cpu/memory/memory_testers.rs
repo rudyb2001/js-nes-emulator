@@ -53,3 +53,26 @@ fn test_write_word() {
         }
     }
 }
+
+#[test]
+fn test_load_program() {
+    let program = vec![0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF];
+    let mut mm = MemoryMap::new();
+    mm.load_program(program.clone());
+
+    for i in 0..0xFFFF {
+        if i >= 0x8000 && i < 0x8000 + program.len() { // should be program data
+            assert!(mm.map[i] == program[i - 0x8000]);
+        } else { // should be 0x00
+            assert!(mm.map[i] == 0);
+        }
+    }
+}
+
+#[test]
+#[should_panic]
+fn test_load_program_too_large() {
+    let program = vec![0xA1; 0xFFFF - 0x8000 + 1];
+    let mut mm = MemoryMap::new();
+    mm.load_program(program);
+}
