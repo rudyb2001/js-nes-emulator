@@ -15,20 +15,20 @@ fn test_read_byte() {
     b.ram[0x07FF] = 0xBB;
 
     // reading RAM
-    assert!(b.read_byte(0x0000) == 0xAA);
-    assert!(b.read_byte(0x07FF) == 0xBB);
+    assert_eq!(b.read_byte(0x0000), 0xAA);
+    assert_eq!(b.read_byte(0x07FF), 0xBB);
 
     // RAM mirroring
-    assert!(b.read_byte(0x07FF + 0x800) == 0xBB);
-    assert!(b.read_byte(0x0000 + 0x800 * 2) == 0xAA);
+    assert_eq!(b.read_byte(0x07FF + 0x800), 0xBB);
+    assert_eq!(b.read_byte(0x0000 + 0x800 * 2), 0xAA);
 
     // reading prg_rom
-    assert!(b.read_byte(0x9876) == 0xCC);
-    assert!(b.read_byte(0xABCD) == 0xDD);
+    assert_eq!(b.read_byte(0x9876), 0xCC);
+    assert_eq!(b.read_byte(0xABCD), 0xDD);
 
     // prg_rom mirroring
-    assert!(b.read_byte(0x9876 + 0x4000) == 0xCC);
-    assert!(b.read_byte(0xABCD + 0x4000) == 0xDD);
+    assert_eq!(b.read_byte(0x9876 + 0x4000), 0xCC);
+    assert_eq!(b.read_byte(0xABCD + 0x4000), 0xDD);
 
     // PPU IO Registers
     todo!("Test reading from PPU / IO Registers");
@@ -64,16 +64,16 @@ fn test_read_word() {
     b.ram[0x0001] = 0xAB;
     b.ram[0x0002] = 0xEF;
 
-    assert!(b.read_word(0) == 0xABCD);
-    assert!(b.read_word(1) == 0xEFAB);
-    assert!(b.read_word(2) == 0x00EF);
-    assert!(b.read_word(0x07FF) == 0xCD00); // cross-mirror-boundary behavior
+    assert_eq!(b.read_word(0), 0xABCD);
+    assert_eq!(b.read_word(1), 0xEFAB);
+    assert_eq!(b.read_word(2), 0x00EF);
+    assert_eq!(b.read_word(0x07FF), 0xCD00); // cross-mirror-boundary behavior
 
     // reading words from ROM
-    assert!(b.read_word(0 + 0x8000) == 0x1234);
-    assert!(b.read_word(1 + 0x8000) == 0x5612);
-    assert!(b.read_word(2 + 0x8000) == 0x0056);
-    assert!(b.read_word(0x3FFF + 0x8000) == 0x3400); // cross-mirror-boundary behavior
+    assert_eq!(b.read_word(0 + 0x8000), 0x1234);
+    assert_eq!(b.read_word(1 + 0x8000), 0x5612);
+    assert_eq!(b.read_word(2 + 0x8000), 0x0056);
+    assert_eq!(b.read_word(0x3FFF + 0x8000), 0x3400); // cross-mirror-boundary behavior
 
     todo!("Test reading from PPU / IO Registers");
 }
@@ -89,14 +89,14 @@ fn test_write_byte() {
 
     // writing to RAM
     b.write_byte(0x0123, 0xFE);
-    assert!(b.ram[0x0123] == 0xFE);
+    assert_eq!(b.ram[0x0123], 0xFE);
     b.write_byte(0x0801, 0xA1);
-    assert!(b.ram[0x0001] == 0xA1);
+    assert_eq!(b.ram[0x0001], 0xA1);
 
     // verify that no other memory has been changed
     for i in 0..0x0800 {
         if i != 0x0123 && i != 0x0001 {
-            assert!(b.ram[i] == 0);
+            assert_eq!(b.ram[i], 0);
         }
     }
 
@@ -140,12 +140,12 @@ fn test_write_word() {
 
     // writing to RAM
     b.write_word(0x04DD, 0x1234); // regular
-    assert!(b.ram[0x04DD] == 0x34);
-    assert!(b.ram[0x04DE] == 0x12);
+    assert_eq!(b.ram[0x04DD], 0x34);
+    assert_eq!(b.ram[0x04DE], 0x12);
 
     b.write_word(0x07FF, 0xABCD); // mirroring
-    assert!(b.ram[0] == 0xAB);
-    assert!(b.ram[0x07FF] == 0xCD);
+    assert_eq!(b.ram[0], 0xAB);
+    assert_eq!(b.ram[0x07FF], 0xCD);
 
     // verify that no other memory has been changed
     for i in 0..0x0800 {
@@ -153,7 +153,7 @@ fn test_write_word() {
             0x04DD..=0x04DE => (),
             0 => (),
             0x07FF => (),
-            _ => assert!(b.ram[i] == 0x00),
+            _ => assert_eq!(b.ram[i], 0x00),
         }
     }
 
