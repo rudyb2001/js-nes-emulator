@@ -1,9 +1,10 @@
-mod memory;
+mod bus;
 
-use memory::MemoryMap;
+use bus::Bus;
 
-struct CPU {
-    memory: MemoryMap,
+struct CPU<'a> {
+    bus: Bus<'a>, // the bus is used as an abstraction of all interaction between the CPU and other components
+              // thus the bus encapsulates all other components, like the PPU
 
     pc: u16,
     accumulator: u8,
@@ -23,9 +24,9 @@ struct CPU {
     b_2: bool
 }
 
-impl CPU {
+impl<'a> CPU<'a> {
     fn get_instruction(&self, index: u16) -> u8 {
-        self.memory.read_byte(index)
+        self.bus.read_byte(index)
     }
 
     fn process_instruction(instruction: u8) {
