@@ -105,7 +105,7 @@ fn test_write_byte() {
 
 #[test]
 #[should_panic]
-fn test_write_byte_to_rom_1() {
+fn test_write_byte_to_unsupported_address() {
     let prg_rom = Vec::new();
 
     let mut b = Bus {
@@ -118,7 +118,7 @@ fn test_write_byte_to_rom_1() {
 
 #[test]
 #[should_panic]
-fn test_write_byte_to_rom_2() {
+fn test_write_byte_to_rom() {
     let prg_rom = Vec::new();
 
     let mut b = Bus {
