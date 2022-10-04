@@ -74,6 +74,8 @@ fn test_read_word() {
     assert!(b.read_word(1 + 0x8000) == 0x5612);
     assert!(b.read_word(2 + 0x8000) == 0x0056);
     assert!(b.read_word(0x3FFF + 0x8000) == 0x3400); // cross-mirror-boundary behavior
+
+    todo!("Test reading from PPU / IO Registers");
 }
 
 #[test]
@@ -155,5 +157,5 @@ fn test_write_word() {
         }
     }
 
-    // todo!("Test writing to PPU / IO Registers");
+    todo!("Test writing to PPU / IO Registers");
 }
