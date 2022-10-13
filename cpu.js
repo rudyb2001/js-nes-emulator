@@ -1,7 +1,7 @@
 class CPU {
     constructor() {
         this.program = [];
-        this.memory = [];   // May make this it's own class
+        this.memory = new Memory();
 
         this.pc = 0;
         this.a = new Uint8Array(1);
@@ -50,18 +50,6 @@ class CPU {
         console.log(`Y Register: ${this.y}`);
         console.log(`Flags: ${JSON.stringify(this.flag, null, 4)}`);
         //console.log(JSON.stringify(this.flag));
-    }
-
-    // Check if number is beyond bounds of 8-bit integer range
-    isOverflow(num) {
-        return (num > 127 || num < -128);
-    }
-
-    // Returns least significant 8 bits from number
-    shrink8bit(num) {
-        // Shift last byte up 3 bytes, removing all information past that
-        // Shift back down, only last bytes remaining (sign extended)
-        return (num << 24) >> 24;
     }
 
     // Add with carry
