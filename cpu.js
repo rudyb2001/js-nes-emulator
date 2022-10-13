@@ -4,9 +4,9 @@ class CPU {
         this.memory = [];   // May make this it's own class
 
         this.pc = 0;
-        this.a = 0;
-        this.x = 0;
-        this.y = 0;
+        this.a = new Uint8Array(1);
+        this.x = new Uint8Array(1);
+        this.y = new Uint8Array(1);
         this.flag = {
             c: false,
             z: false,
@@ -14,7 +14,7 @@ class CPU {
             d: false,
             b: false,
             v: false,
-            n: false
+            n: false,
         }
         this.opcodes = {
             // ADC - Add with carry
@@ -48,7 +48,8 @@ class CPU {
         console.log(`Accumulator: ${this.a}`);
         console.log(`X Register: ${this.x}`);
         console.log(`Y Register: ${this.y}`);
-        console.log(`Flags: ${this.flags}`);
+        console.log(`Flags: ${JSON.stringify(this.flag, null, 4)}`);
+        //console.log(JSON.stringify(this.flag));
     }
 
     // Check if number is beyond bounds of 8-bit integer range
@@ -66,21 +67,21 @@ class CPU {
     // Add with carry
     // TODO - Finish instruction for all addressing modes
     adc(opcode) {
-        console.log(opcode);
+        console.log(`ADC Opcode = ${opcode}`);
         if (opcode === "69") {  // Immediate
             //Get imm value
             this.pc += 1;
-            let imm = this.getInstruction(this.pc);
+            let imm = parseInt(this.getInstruction(this.pc));
             console.log(`Imm = ${imm}`);
 
             // Add imm + carry to accumulator
-            this.a += imm + +this.flag.c;           // Cast boolean to int
-            this.flag.c = this.isOverflow(this.a);
-            this.flag.z = this.a === 0;
+            console.log(`Acc = ${this.a[0]}`);
+            console.log(`c = ${+this.flag.c}`);
+            console.log(`Sum = ${imm + +this.flag.c}`);
+            this.a[0] += imm + +this.flag.c;           // Cast boolean to int
+            this.flag.z = this.a[0] === 0;
 
-            console.log(`Acc = ${this.a}`);
-            this.a = this.shrink8bit(this.a);
-            console.log(`Acc = ${this.a}`);
+            console.log(`Acc = ${this.a[0]}`);
         }
     }
 }
