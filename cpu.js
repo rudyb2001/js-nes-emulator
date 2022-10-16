@@ -1,7 +1,7 @@
 class CPU {
     constructor() {
         this.program = [];
-        this.memory = new Memory();
+        this.memoryMap = new MemoryMap();
 
         this.pc = 0;
         this.a = new Uint8Array(1);
@@ -30,7 +30,7 @@ class CPU {
     }
 
     loadProgram(program) {
-        this.program = program;
+        this.memoryMap.loadProgram(program);
     }
 
     getInstruction(i) {
@@ -75,4 +75,4 @@ class CPU {
 }
 
 //export default class { cpu };
-module.exports = CPU;
+//module.exports = CPU;
