@@ -1,3 +1,19 @@
+// Javascript doesn't have support for enums - this can be changed to
+// an enum when we migrate to TS. TODO
+// (the below is actually what a typescript enum would compile to)
+const AddressingMode  = {
+    Immediate: "Immediate",
+    ZeroPage: "ZeroPage",
+    ZeroPageX: "ZeroPageX",
+    ZeroPageY: "ZeroPageY",
+    Absolute: "Absolute",
+    AbsoluteX: "AbsoluteX",
+    AbsoluteY: "AbsoluteY",
+    IndirectX: "IndirectX",
+    IndirectY: "IndirectY",
+    NoAddressing: "NoAddressing"
+};
+
 /*
  * This class is used by the CPU to access all other machine components
  * (RAM, PPU, ROM, IO, ...) via an address.
@@ -32,7 +48,7 @@ class MemoryMap {
         } else if (0x8000 <= addr && addr <= 0xFFFF) { // cartdrige ROM
             // TODO implement mapping? (mapper 0 should have the same behavior as "no mapping"? (mirror over whole range))
             if(this.program == null) throw `cannot read address ${addr} in ROM because no program is loaded!`
-            return this.program[addr % this.program.length]; // mirror the ROM over this range
+            return this.program[(addr - 0x8000) % this.program.length]; // mirror the ROM over this range
         }
 
         throw `address ${addr} is out of memory map's bounds!`;
@@ -79,5 +95,70 @@ class MemoryMap {
     loadProgram(program) {
         if(!program instanceof Uint8Array) throw "Program must be a Uint8Array";
         this.program = program;
+    }
+
+    /* 
+     * returns a 16-bit address of the data referred to by the given &cpu and addrMode
+     * https://www.nesdev.org/obelisk-6502-guide/addressing.html#IDX
+     */
+    getOperandAddress(cpu, addrMode) {
+        switch(addrMode) {
+            case AddressingMode.Immediate: // Immediate: value is in executable memory, program counter pointing to it
+                {
+                    return cpu.pc[0];
+                }
+            case AddressingMode.ZeroPage: // ZeroPage: memory access in 1st page of memory for speed 
+                {
+                    let addr = new Uint8Array(1);
+                    addr[0] = this.readByte(cpu.pc[0]);
+                    return addr[0];
+                }
+            case AddressingMode.ZeroPageX: // ZeroPage but add contents of register x (iteration purposes)
+                {
+                    let addr = new Uint8Array(1);
+                    addr[0] = this.readByte(cpu.pc[0]) + cpu.x[0]; // automatically wraps
+                    return addr[0];
+                }
+            case AddressingMode.ZeroPageY: // ZeroPageX but with register y
+                {
+                    let addr = new Uint8Array(1);
+                    addr[0] += this.readByte(cpu.pc[0]) + cpu.y[0]; // automatically wraps
+                    return addr[0];
+                }
+            case AddressingMode.Absolute: // Absolute: instruction param is a pointer to a memory address
+                {
+                    return this.readWord(cpu.pc[0]);
+                }
+            case AddressingMode.AbsoluteX: // Absolute mode but add contents of register x
+                {
+                    let addr = new Uint16Array(1);
+                    addr[0] = this.readWord(cpu.pc[0]) + cpu.x[0]; 
+                    return addr[0];
+                }
+            case AddressingMode.AbsoluteY: // Absolute mode but add contents of register y
+                {
+                    let addr = new Uint16Array(1);
+                    addr[0] = this.readWord(cpu.pc[0]) + cpu.y[0]; 
+                    return addr[0];
+                }
+            case AddressingMode.IndirectX: // IndirectX: 16-bit address is stored at *(pc + x) (with wrap-around of the zero-page)
+                {
+                    let addrPtr = new Uint8Array(2);
+                    addrPtr[0] = this.readByte(cpu.pc[0]) + cpu.x[0]; // &(LSB of address)
+                    addrPtr[1] = addrPtr[0] + 1;                   // &(MSB of address) (this wraps around the zero-page)
+                    return (this.readByte(addrPtr[1]) << 8) | (this.readByte(addrPtr[0]));
+                }
+            case AddressingMode.IndirectY: // IndirectY: same idea as IndirectX
+                {
+                    let addrPtr = new Uint8Array(2);
+                    addrPtr[0] = this.readByte(cpu.pc[0]) + cpu.y[0]; // &(LSB of address)
+                    addrPtr[1] = addrPtr[0] + 1;                   // &(MSB of address) (this wraps around the zero-page)
+                    return (this.readByte(addrPtr[1]) << 8) | (this.readByte(addrPtr[0]));
+                }
+            case AddressingMode.NoAddressing:
+            default:
+                throw `Cannot retrieve address from addressing mode: ${addrMode}`;
+                break;
+        }
     }
 }

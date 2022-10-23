@@ -216,12 +216,225 @@ function testLoadProgram() {
     }
 }
 
+function testGetOperandAddress() {
+    { // imm 
+        let c = new CPU();
+
+        for(let i = 0x8000; i < 0x10000; i++) {
+            c.pc[0] = i;
+            console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.Immediate) == i);
+        }
+    }
+
+    { // zero-page
+        let c = new CPU();
+
+        let prog = Uint8Array.from([0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA]); // these are addresses
+        c.memoryMap.loadProgram(prog);
+
+        for(let i = 0; i < prog.length; i++) {
+            c.pc[0] = 0x8000 + i;
+            console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.ZeroPage) == prog[i]);
+        }
+    }
+
+    { // zero-page x 
+        let c = new CPU();
+
+        let prog = Uint8Array.from([0x12, 0x34, 0x56, 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA]);
+        c.memoryMap.loadProgram(prog);
+        c.pc[0] = 0x8000;
+
+        for(let i = 0; i < prog.length; i++) {
+            c.pc[0] = 0x8000 + i;
+            c.x[0] = i;
+
+            let expected = new Uint8Array(1);
+            expected[0] = prog[i] + i;
+
+            console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.ZeroPageX) == expected[0]);
+        }
+    }
+
+    { // zero-page y
+        let c = new CPU();
+
+        let prog = Uint8Array.from([0x12, 0x34, 0x56, 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA]);
+        c.memoryMap.loadProgram(prog);
+        c.pc[0] = 0x8000;
+
+        for(let i = 0; i < prog.length; i++) {
+            c.pc[0] = 0x8000 + i;
+            c.y[0] = i;
+
+            let expected = new Uint8Array(1);
+            expected[0] = prog[i] + i;
+
+            console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.ZeroPageY) == expected[0]);
+        }
+    }
+
+    { // absolute
+        let c = new CPU();
+
+        let prog = Uint8Array.from([0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF]);
+        c.memoryMap.loadProgram(prog);
+
+        c.pc[0] = 0x8000;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.Absolute) == 0x3412);
+        c.pc[0]++;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.Absolute) == 0x5634);
+        c.pc[0]++;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.Absolute) == 0x7856);
+        c.pc[0] = 0x8000 + prog.length - 1; // last index of prog
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.Absolute) == 0x12EF);
+    }
+
+    { // absolute x
+        let c = new CPU();
+
+        let prog = Uint8Array.from([0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF]);
+        c.memoryMap.loadProgram(prog);
+
+        c.pc[0] = 0x8000;
+        c.x[0] = 0x12;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteX) == 0x3412 + c.x[0]);
+        c.pc[0]++;
+        c.x[0] = 0xB2;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteX) == 0x5634 + c.x[0]);
+        c.pc[0]++;
+        c.x[0] = 0xBF;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteX) == 0x7856 + c.x[0]);
+        c.pc[0] = 0x8000 + prog.length - 1; // last index of prog
+        c.x[0] = 0xEF;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteX) == 0x12EF + c.x[0]);
+    }
+
+    { // absolute y
+        let c = new CPU();
+
+        let prog = Uint8Array.from([0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF]);
+        c.memoryMap.loadProgram(prog);
+
+        c.pc[0] = 0x8000;
+        c.y[0] = 0x12;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteY) == 0x3412 + c.y[0]);
+        c.pc[0]++;
+        c.y[0] = 0xB2;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteY) == 0x5634 + c.y[0]);
+        c.pc[0]++;
+        c.y[0] = 0xBF;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteY) == 0x7856 + c.y[0]);
+        c.pc[0] = 0x8000 + prog.length - 1; // last index of prog
+        c.y[0] = 0xEF;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteY) == 0x12EF + c.y[0]);
+    }
+
+    { // indirect x
+        let c = new CPU();
+
+        // store some addresses in ram
+        c.memoryMap.writeWord(0x0000, 0x1234);
+        c.memoryMap.writeWord(0x0002, 0x5678);
+        c.memoryMap.writeWord(0x00FE, 0x9ABC);
+
+        // store pointers to those addresses in the program
+        let prog = Uint8Array.from([0x00, 0x02, 0xFE, 0xFF]);
+        c.memoryMap.loadProgram(prog);
+
+        // test with x = 0
+        c.x[0] = 0;
+        c.pc[0] = 0x8000;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectX) == 0x1234);
+        c.pc[0]++; 
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectX) == 0x5678);
+        c.pc[0]++; 
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectX) == 0x9ABC);
+        c.pc[0]++; 
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectX) == 0x349A);
+
+        // try offsets of x
+        c.pc[0] = 0x8000;
+        c.x[0] = 0x02;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectX) == 0x5678);
+        c.pc[0]++;
+        c.x[0] = 0xFE;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectX) == 0x1234);
+        c.pc[0]++;
+        c.x[0] = 0x01;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectX) == 0x349A);
+    }
+
+    { // indirect y
+        let c = new CPU();
+
+        // store some addresses in ram
+        c.memoryMap.writeWord(0x0000, 0x1234);
+        c.memoryMap.writeWord(0x0002, 0x5678);
+        c.memoryMap.writeWord(0x00FE, 0x9ABC);
+
+        // store pointers to those addresses in the program
+        let prog = Uint8Array.from([0x00, 0x02, 0xFE, 0xFF]);
+        c.memoryMap.loadProgram(prog);
+
+        // test with y = 0
+        c.y[0] = 0;
+        c.pc[0] = 0x8000;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x1234);
+        c.pc[0]++; 
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x5678);
+        c.pc[0]++; 
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x9ABC);
+        c.pc[0]++; 
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x349A);
+
+        // try offsets of y
+        c.pc[0] = 0x8000;
+        c.y[0] = 0x02;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x5678);
+        c.pc[0]++;
+        c.y[0] = 0xFE;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x1234);
+        c.pc[0]++;
+        c.y[0] = 0x01;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x349A);
+    }
+
+    { // no addressing
+        let c = new CPU();
+        try {
+            c.memoryMap.getOperandAddress(c, AddressingMode.NoAddressing);
+            console.assert(false);
+        } catch(e) {}
+    }
+
+    { // erroneous arguments 
+        let c = new CPU();
+
+        try {
+            c.memoryMap.getOperandAddress(c, "not an addressing mode");
+            console.assert(false);
+        } catch(e) {}
+
+        try {
+            c.memoryMap.getOperandAddress(c, 123);
+            console.assert(false);
+        } catch(e) {}
+
+        try {
+            c.memoryMap.getOperandAddress("not a cpu", AddressingMode.ZeroPage);
+            console.assert(false);
+        } catch(e) {}
+    }
+}
+
 function runMemoryTests() {
     testReadByte();
     testReadWord();
     testWriteByte();
     testWriteWord();
     testLoadProgram();
+    testGetOperandAddress();
 }
 
 runMemoryTests();

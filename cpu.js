@@ -1,9 +1,8 @@
 class CPU {
     constructor() {
-        this.program = [];
         this.memoryMap = new MemoryMap();
 
-        this.pc = 0;
+        this.pc = new Uint16Array(1);
         this.a = new Uint8Array(1);
         this.x = new Uint8Array(1);
         this.y = new Uint8Array(1);
@@ -29,22 +28,8 @@ class CPU {
         }
     }
 
-    loadProgram(program) {
-        this.memoryMap.loadProgram(program);
-    }
-
-    getInstruction(i) {
-        if (this.program.length == 0) {
-            return null;
-        }
-        if (i >= this.program.length) {
-            return null;
-        }
-        return this.program[i];
-    }
-
     printRegisters() {
-        console.log(`Program Counter: ${this.pc}`);
+        console.log(`Program Counter: ${this.pc[0]}`);
         console.log(`Accumulator: ${this.a}`);
         console.log(`X Register: ${this.x}`);
         console.log(`Y Register: ${this.y}`);
@@ -57,9 +42,9 @@ class CPU {
     adc(opcode) {
         console.log(`ADC Opcode = ${opcode}`);
         if (opcode === "69") {  // Immediate
-            //Get imm value
-            this.pc += 1;
-            let imm = parseInt(this.getInstruction(this.pc));
+            this.pc[0] += 1; // skip over instruction
+            let imm = memoryMap.readByte(this.pc[0]);
+            this.pc[0] += 1; // done reading imm arg
             console.log(`Imm = ${imm}`);
 
             // Add imm + carry to accumulator
