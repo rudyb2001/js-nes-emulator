@@ -59,5 +59,3 @@ class CPU {
     }
 }
 
-//export default class { cpu };
-//module.exports = CPU;
