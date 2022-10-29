@@ -89,7 +89,7 @@ function testOverflow(op1, op2, res) {
  */
 function u8Add(a, b) {
     let sum = new Uint8Array(1);
-    sum = a + b;
+    sum[0] = a + b;
     return sum[0];
 }
 
