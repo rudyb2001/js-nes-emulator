@@ -161,4 +161,35 @@ class MemoryMap {
                 break;
         }
     }
+
+    /*
+     * returns the operand specified by addrMode, updates the program counter
+     * accordingly.
+     * 
+     * TODO this function might also handle some other behavior, such as extra clock cycle counting
+     */
+    getOperand(cpu, addrMode) {
+        let addr = this.getOperandAddress(cpu, addrMode);
+
+        switch(addrMode) {
+            case AddressingMode.Immediate:
+            case AddressingMode.ZeroPage:
+            case AddressingMode.ZeroPageX:
+            case AddressingMode.ZeroPageY:
+            case AddressingMode.IndirectX:
+            case AddressingMode.IndirectY:
+            { // 8-bit addressing modes
+                cpu.pc[0]++;
+                return cpu.memoryMap.readByte(addr);
+            }
+
+            case AddressingMode.Absolute:
+            case AddressingMode.AbsoluteX:
+            case AddressingMode.AbsoluteY:
+            { // 16-bit addressing modes
+                cpu.pc[0] += 2;
+                return cpu.memoryMap.readWord(addr);
+            }
+        }
+    }
 }

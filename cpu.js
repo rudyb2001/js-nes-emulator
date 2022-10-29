@@ -29,33 +29,13 @@ class CPU {
     }
 
     printRegisters() {
-        console.log(`Program Counter: ${this.pc[0]}`);
-        console.log(`Accumulator: ${this.a}`);
-        console.log(`X Register: ${this.x}`);
-        console.log(`Y Register: ${this.y}`);
-        console.log(`Flags: ${JSON.stringify(this.flag, null, 4)}`);
+        console.log(`CPU STATE:`);
+        console.log(`   Program Counter: ${this.pc[0]}`);
+        console.log(`   Accumulator: ${this.a}`);
+        console.log(`   X Register: ${this.x}`);
+        console.log(`   Y Register: ${this.y}`);
+        console.log(`   Flags: ${JSON.stringify(this.flag, null, 4)}`);
         //console.log(JSON.stringify(this.flag));
-    }
-
-    // Add with carry
-    // TODO - Finish instruction for all addressing modes
-    adc(opcode) {
-        console.log(`ADC Opcode = ${opcode}`);
-        if (opcode === "69") {  // Immediate
-            this.pc[0] += 1; // skip over instruction
-            let imm = memoryMap.readByte(this.pc[0]);
-            this.pc[0] += 1; // done reading imm arg
-            console.log(`Imm = ${imm}`);
-
-            // Add imm + carry to accumulator
-            console.log(`Acc = ${this.a[0]}`);
-            console.log(`c = ${+this.flag.c}`);
-            console.log(`Sum = ${imm + +this.flag.c}`);
-            this.a[0] += imm + +this.flag.c;           // Cast boolean to int
-            this.flag.z = this.a[0] === 0;
-
-            console.log(`Acc = ${this.a[0]}`);
-        }
     }
 }
 
