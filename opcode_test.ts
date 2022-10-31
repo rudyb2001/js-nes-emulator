@@ -1,3 +1,61 @@
+/*
+ * executes a given set of instructions (prog) on an instance of CPU (state),
+ * and compares it to an expected instance of CPU (expected). Additional
+ * arguments can be passed to populate the initial state's memory map,
+ * in the format: addr1, byte1, addr2, byte2, addr3, byte3, ...
+ */
+function exeCpuTestcase(state: CPU, prog: Uint8Array, expected: CPU, ...mem: number[]): void {
+    // load program
+    state.memoryMap.loadProgram(prog);
+
+    // populate memory
+    let addr;
+    for(let i = 0; i < mem.length; i++) {
+        if(i % 2 == 0) addr = mem[i];
+        else state.memoryMap.writeByte(addr, mem[i]);
+    }
+
+    // execute instructions
+    state.pc[0] = 0x8000;
+    while(state.pc[0] < 0x8000 + prog.length) {
+        Opcode.executeCurrent(state);
+    }
+
+    // verify that state matches expected
+    state.assertEqual(expected);
+}
+
+function testExeCpuTestcase() {
+    // TODO
+}
+
+function testExecuteCurrent() {
+    // TODO
+}
+
+function testTestOverflow() {
+    // TODO
+}
+
+function testU8Add() {
+    // TODO
+}
+
+function runOpcodeTests() {
+    testExeCpuTestcase();
+    testExecuteCurrent();
+    testTestOverflow();
+    testU8Add();
+
+    // Opcode function testers below
+
+    testADC();
+}
+
+function testADC() {
+    // TODO
+}
+
 { // possible scenario for adc
     let c = new CPU();
     let program = Uint8Array.from([

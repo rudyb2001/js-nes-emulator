@@ -142,7 +142,7 @@ function testWriteByte() {
         // for now, assume writing to ROM is illegal
         let m = new MemoryMap();
         try {
-            m.writeByte(0x8000);
+            m.writeByte(0x8000, 0);
             console.assert(false);
         } catch(e) {}
     }
@@ -168,7 +168,7 @@ function testWriteWord() {
     { // unsupported range
         let m = new MemoryMap();
         try {
-            m.writeWord(0x2000);
+            m.writeWord(0x2000, 0x0);
             console.assert(false);
         } catch(e) {}
     }
@@ -179,7 +179,7 @@ function testWriteWord() {
         // for now, assume writing to ROM is illegal
         let m = new MemoryMap();
         try {
-            m.writeWord(0x7FFF);
+            m.writeWord(0x7FFF, 0x0);
             console.assert(false);
         } catch(e) {}
     }
@@ -187,32 +187,12 @@ function testWriteWord() {
 
 function testLoadProgram() {
     { // valid program
-        let program = new Uint8Array();
+        let program = new Uint8Array(1);
         let m = new MemoryMap();
 
         m.loadProgram(program);
 
         console.assert(m.program === program);
-    }
-
-    { // invalid program
-        let invalidProgram1 = [3, 4, 5]; // not a Uint8Array
-        let invalidProgram2 = {}; // not a Uint8Array
-        let invalidProgram3 = "abc"; // not a Uint8Array
-        try {
-            m.loadProgram(invalidProgram1);
-            console.assert(false);
-        } catch(e) {}
-
-        try {
-            m.loadProgram(invalidProgram2);
-            console.assert(false);
-        } catch(e) {}
-
-        try {
-            m.loadProgram(invalidProgram3);
-            console.assert(false);
-        } catch(e) {}
     }
 }
 
@@ -407,25 +387,10 @@ function testGetOperandAddress() {
             console.assert(false);
         } catch(e) {}
     }
+}
 
-    { // erroneous arguments 
-        let c = new CPU();
-
-        try {
-            c.memoryMap.getOperandAddress(c, "not an addressing mode");
-            console.assert(false);
-        } catch(e) {}
-
-        try {
-            c.memoryMap.getOperandAddress(c, 123);
-            console.assert(false);
-        } catch(e) {}
-
-        try {
-            c.memoryMap.getOperandAddress("not a cpu", AddressingMode.ZeroPage);
-            console.assert(false);
-        } catch(e) {}
-    }
+function testGetOperand() { 
+    // TODO implement this
 }
 
 function runMemoryTests() {

@@ -1,18 +1,16 @@
-// Javascript doesn't have support for enums - this can be changed to
-// an enum when we migrate to TS. TODO
-// (the below is actually what a typescript enum would compile to)
-const AddressingMode  = {
-    Immediate: "Immediate",
-    ZeroPage: "ZeroPage",
-    ZeroPageX: "ZeroPageX",
-    ZeroPageY: "ZeroPageY",
-    Absolute: "Absolute",
-    AbsoluteX: "AbsoluteX",
-    AbsoluteY: "AbsoluteY",
-    IndirectX: "IndirectX",
-    IndirectY: "IndirectY",
-    NoAddressing: "NoAddressing"
-};
+// enum type to specify an addressing mode
+enum AddressingMode {  
+    Immediate,
+    ZeroPage,
+    ZeroPageX,
+    ZeroPageY,
+    Absolute,
+    AbsoluteX,
+    AbsoluteY,
+    IndirectX,
+    IndirectY,
+    NoAddressing
+}
 
 /*
  * This class is used by the CPU to access all other machine components
@@ -29,15 +27,15 @@ const AddressingMode  = {
  * and mapping.
  */
 class MemoryMap {
+    memory: Uint8Array;
+    program: Uint8Array;
+
     constructor() {
         this.memory = new Uint8Array(0x0800);
-        this.program; // Uint8Array: will be assigned when loadProgram is called
     }
 
     // returns the byte at the memory map's address addr. 
-    readByte(addr) {
-        if(typeof addr != 'number') throw `can't read non-number "${addr}" as address!`;
-
+    readByte(addr: number): number {
         if(0x0000 <= addr && addr < 0x2000) { // memory (RAM)
             return this.memory[addr % 0x0800]; // 0x0000-0x08000 are mirrored over this range
         } else if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
@@ -54,18 +52,14 @@ class MemoryMap {
         throw `address ${addr} is out of memory map's bounds!`;
     }
 
-    readWord(addr) {
-        if(typeof addr != 'number') throw `can't read non-number "${addr}" as address!`;
-
+    readWord(addr: number): number {
         let lowByte = this.readByte(addr); 
         let highByte = this.readByte(addr + 1);
 
         return (highByte << 8) | lowByte;
     }
 
-    writeByte(addr, b) {
-        if(typeof addr != 'number') throw `can't write at non-number "${addr}" as address!`;
-
+    writeByte(addr: number, b: number): void {
         if(0x0000 <= addr && addr < 0x2000) { // memory (RAM)
             this.memory[addr % 0x0800] = b; // 0x0000-0x08000 are mirrored over this range
         } else if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
@@ -81,9 +75,7 @@ class MemoryMap {
         }
     }
 
-    writeWord(addr, w) {
-        if(typeof addr != 'number') throw `can't write at non-number "${addr}" as address!`;
-
+    writeWord(addr: number, w: number): void {
         let lowByte = w & 0b1111_1111;
         let highByte = w >> 8; 
 
@@ -92,8 +84,7 @@ class MemoryMap {
     }
 
     // loads program, a Uint8Array, into the rom area of "memory"
-    loadProgram(program) {
-        if(!program instanceof Uint8Array) throw "Program must be a Uint8Array";
+    loadProgram(program: Uint8Array): void {
         this.program = program;
     }
 
@@ -101,7 +92,7 @@ class MemoryMap {
      * returns a 16-bit address of the data referred to by the given &cpu and addrMode
      * https://www.nesdev.org/obelisk-6502-guide/addressing.html#IDX
      */
-    getOperandAddress(cpu, addrMode) {
+    getOperandAddress(cpu: CPU, addrMode: AddressingMode): number {
         switch(addrMode) {
             case AddressingMode.Immediate: // Immediate: value is in executable memory, program counter pointing to it
                 {
@@ -168,7 +159,7 @@ class MemoryMap {
      * 
      * TODO this function might also handle some other behavior, such as extra clock cycle counting
      */
-    getOperand(cpu, addrMode) {
+    getOperand(cpu: CPU, addrMode: AddressingMode): number {
         let addr = this.getOperandAddress(cpu, addrMode);
 
         switch(addrMode) {

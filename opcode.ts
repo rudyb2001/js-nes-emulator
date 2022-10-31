@@ -1,4 +1,10 @@
 class Opcode {
+    fn: ((cpu: CPU, operand: number) => void) | ((cpu: CPU) => void);
+    bytes: number;
+    cycles: number;
+    plusOneIfPageCrossed: boolean;
+    addressingMode: AddressingMode;
+
     constructor(fn, bytes, cycles, plusOneIfPageCrossed, addressingMode) {
         this.fn = fn; // function pointer
         this.bytes = bytes; // number TODO this might be unnessary - bytes should be implicit by opcode (right?)
@@ -22,7 +28,7 @@ class Opcode {
      * Executes the opcode currently pointed to by cpu's program counter.
      * The program counter will be accordingly adjusted.
      */
-    static executeCurrent(cpu) {
+    static executeCurrent(cpu: CPU): void {
         let n = cpu.memoryMap.readByte(cpu.pc[0]++);
         let opc = Opcode.table[n];
         if(!opc) throw `No such opcode! : ${n}`;
@@ -40,21 +46,21 @@ class Opcode {
      *
      * stores (operand + carry flag + accumulator) into the accumulator.
      */
-    static ADC(cpu, operand) {
+    static ADC(cpu: CPU, operand: number) {
         let result = 0; // number
         result += operand;
         result += cpu.a[0];
-        result += cpu.flag.c;
+        result += (cpu.flag.c ? 1 : 0);
 
         // place result in the accumulator
         cpu.a[0] = result;
 
         // udpate flags
         // to check for overflow, we consider overflow in (smaller + carry), then (smaller + carry + larger)
-        let smaller = Math.min(operand, cpu.a);
-        let larger = Math.max(operand, cpu.a);
+        let smaller = Math.min(operand, cpu.a[0]);
+        let larger = Math.max(operand, cpu.a[0]);
         cpu.flag.v = smaller == 0b0111_1111 && cpu.flag.c || // (smaller + carry) overflows ?
-                     testOverflow(smaller + cpu.flag.c, larger, u8Add(smaller + cpu.flag.c, larger)); // overflow with entire addition
+                     testOverflow(smaller + (cpu.flag.c ? 1 : 0), larger, cpu.a[0]); // overflow with entire addition
         cpu.flag.c = (result & 0b1_0000_0000) != 0;
         cpu.flag.z = result == 0;
         cpu.flag.n = (result & 0b1000_0000) != 0;
@@ -73,7 +79,7 @@ class Opcode {
  * (if op1 and op2 have matching signs, and res's sign does not match, overflow has occurred.)
  * (if op1 and op2 have conflicting signs, overflow could not have occurred.)
  */
-function testOverflow(op1, op2, res) {
+function testOverflow(op1: number, op2: number, res: number): boolean {
     let larger = Math.max(op1, op2);
     let smaller = Math.min(op1, op2);
 
@@ -87,9 +93,8 @@ function testOverflow(op1, op2, res) {
 /*
  * adds two numbers, (a, and b), and returns their result casted into an unsigned 8-bit integer
  */
-function u8Add(a, b) {
+function u8Add(a: number, b: number): number {
     let sum = new Uint8Array(1);
     sum[0] = a + b;
     return sum[0];
 }
-
