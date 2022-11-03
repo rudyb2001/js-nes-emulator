@@ -1,3 +1,5 @@
-let cpu = new CPU();
+function runCpuTests() {
+    // TODO add any necessary tests
+}
 
-// TODO write tests
+runCpuTests();

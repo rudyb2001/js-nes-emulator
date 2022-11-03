@@ -22,6 +22,8 @@ class Opcode {
         0x79 : new Opcode(Opcode.ADC, 3, 4, true, AddressingMode.AbsoluteY),
         0x61 : new Opcode(Opcode.ADC, 2, 6, false, AddressingMode.IndirectX),
         0x71 : new Opcode(Opcode.ADC, 2, 5, true, AddressingMode.IndirectY),
+
+        0x18 : new Opcode(Opcode.CLC, 1, 2, false, AddressingMode.NoAddressing)
     }
 
     /*
@@ -42,12 +44,13 @@ class Opcode {
     }
 
     /*
-     * ADC - Add with carry
+     * ADC - ADd with Carry
      *
      * stores (operand + carry flag + accumulator) into the accumulator.
      */
     static ADC(cpu: CPU, operand: number) {
         let result = 0; // number
+        let a1 = cpu.a[0]; // need to remember a's initial value when checking for overflow
         result += operand;
         result += cpu.a[0];
         result += (cpu.flag.c ? 1 : 0);
@@ -57,14 +60,22 @@ class Opcode {
 
         // udpate flags
         // to check for overflow, we consider overflow in (smaller + carry), then (smaller + carry + larger)
-        let smaller = Math.min(operand, cpu.a[0]);
-        let larger = Math.max(operand, cpu.a[0]);
+        let smaller = Math.min(operand, a1);
+        let larger = Math.max(operand, a1);
         cpu.flag.v = smaller == 0b0111_1111 && cpu.flag.c || // (smaller + carry) overflows ?
                      testOverflow(smaller + (cpu.flag.c ? 1 : 0), larger, cpu.a[0]); // overflow with entire addition
         cpu.flag.c = (result & 0b1_0000_0000) != 0;
-        cpu.flag.z = result == 0;
+        cpu.flag.z = u8Add(result, 0) == 0; // result as u8 == 0
         cpu.flag.n = (result & 0b1000_0000) != 0;
+    }
 
+    /*
+     * CLC - Clear Carry Flag
+     *
+     * sets the carry flag to false
+     */
+    static CLC(cpu: CPU) {
+        cpu.flag.c = false;
     }
 }
 
@@ -74,20 +85,23 @@ class Opcode {
  */
 
 /*
- * given three arguments: two number operands and one number result,
+ * returns true if n's sign-bit (bit 7) is clear
+ */
+function u8IsPositive(n: number) {
+    return (n & 0b1000_0000) == 0;
+}
+
+/*
+ * given three (**8-bit signed**) arguments: two number operands and one number result,
  * true will be returned if overflow occured
  * (if op1 and op2 have matching signs, and res's sign does not match, overflow has occurred.)
  * (if op1 and op2 have conflicting signs, overflow could not have occurred.)
  */
 function testOverflow(op1: number, op2: number, res: number): boolean {
-    let larger = Math.max(op1, op2);
-    let smaller = Math.min(op1, op2);
-
-    let signsMatch = smaller >= 0 || larger <= 0; // smaller is pos => both are pos; larger is neg => both are neg
+    let signsMatch = u8IsPositive(op1) == u8IsPositive(op2);
     if(!signsMatch) return false; // can't overflow if signs are mismatched
 
-    if(smaller >= 0) return res >= 0;
-    else return res <= 0;
+    return u8IsPositive(res) != u8IsPositive(op1); // overflow has occurred if result's sign mismatches the other two
 }
 
 /*

@@ -52,17 +52,17 @@ class CPU {
      * registers. The MemoryMap and program array are not checked.
      */
     assertEqual(other: CPU) {
-        console.assert(this.pc[0] == other.pc[0], `CPU pc register has '${this.pc[0]}', not expected '${other.pc[0]}'`);
-        console.assert(this.a[0] == other.a[0], `CPU pc register has '${this.a[0]}', not expected '${other.a[0]}'`);
-        console.assert(this.x[0] == other.x[0], `CPU pc register has '${this.x[0]}', not expected '${other.x[0]}'`);
-        console.assert(this.y[0] == other.y[0], `CPU pc register has '${this.y[0]}', not expected '${other.y[0]}'`);
-        console.assert(this.flag.c == other.flag.c, `CPU flags.c register is ${this.flag.c}, not expected ${other.flag.c}`);
-        console.assert(this.flag.z == other.flag.z, `CPU flags.c register is ${this.flag.z}, not expected ${other.flag.z}`);
-        console.assert(this.flag.i == other.flag.i, `CPU flags.c register is ${this.flag.i}, not expected ${other.flag.i}`);
-        console.assert(this.flag.d == other.flag.d, `CPU flags.c register is ${this.flag.d}, not expected ${other.flag.d}`);
-        console.assert(this.flag.v == other.flag.v, `CPU flags.c register is ${this.flag.v}, not expected ${other.flag.v}`);
-        console.assert(this.flag.b == other.flag.b, `CPU flags.c register is ${this.flag.b}, not expected ${other.flag.b}`);
-        console.assert(this.flag.n == other.flag.n, `CPU flags.c register is ${this.flag.n}, not expected ${other.flag.n}`);
+        console.assert(this.pc[0] == other.pc[0],   new Error(`CPU pc register has '${toHex(this.pc[0])}', not expected '${toHex(other.pc[0])}'`).stack);
+        console.assert(this.a[0] == other.a[0],     new Error(`CPU a register has '${toHex(this.a[0])}', not expected '${toHex(other.a[0])}'`).stack);
+        console.assert(this.x[0] == other.x[0],     new Error(`CPU x register has '${toHex(this.x[0])}', not expected '${toHex(other.x[0])}'`).stack);
+        console.assert(this.y[0] == other.y[0],     new Error(`CPU y register has '${toHex(this.y[0])}', not expected '${toHex(other.y[0])}'`).stack);
+        console.assert(this.flag.c == other.flag.c, new Error(`CPU flags.c register is ${this.flag.c}, not expected ${other.flag.c}`).stack);
+        console.assert(this.flag.z == other.flag.z, new Error(`CPU flags.z register is ${this.flag.z}, not expected ${other.flag.z}`).stack);
+        console.assert(this.flag.i == other.flag.i, new Error(`CPU flags.i register is ${this.flag.i}, not expected ${other.flag.i}`).stack);
+        console.assert(this.flag.d == other.flag.d, new Error(`CPU flags.d register is ${this.flag.d}, not expected ${other.flag.d}`).stack);
+        console.assert(this.flag.v == other.flag.v, new Error(`CPU flags.v register is ${this.flag.v}, not expected ${other.flag.v}`).stack);
+        console.assert(this.flag.b == other.flag.b, new Error(`CPU flags.b register is ${this.flag.b}, not expected ${other.flag.b}`).stack);
+        console.assert(this.flag.n == other.flag.n, new Error(`CPU flags.n register is ${this.flag.n}, not expected ${other.flag.n}`).stack);
     }
 
     printRegisters(): void {

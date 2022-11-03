@@ -390,7 +390,19 @@ function testGetOperandAddress() {
 }
 
 function testGetOperand() { 
-    // TODO implement this
+    let c = new CPU();
+    c.memoryMap.writeByte(0x0123, 0xFF);
+    c.memoryMap.writeByte(0x0012, 0xEE);
+    c.pc[0] = 0x8000;
+    c.memoryMap.loadProgram(Uint8Array.from([0x12, 0x23, 0x01, 0xAB, 0x11, 0x22, 0x01, 0xCD]));
+
+    console.assert(c.memoryMap.getOperand(c, AddressingMode.ZeroPage) == 0xEE);
+    console.assert(c.memoryMap.getOperand(c, AddressingMode.Absolute) == 0xFF);
+    console.assert(c.memoryMap.getOperand(c, AddressingMode.Immediate) == 0xAB);
+    c.x[0] = 1;
+    console.assert(c.memoryMap.getOperand(c, AddressingMode.ZeroPageX) == 0xEE);
+    console.assert(c.memoryMap.getOperand(c, AddressingMode.AbsoluteX) == 0xFF);
+    console.assert(c.memoryMap.getOperand(c, AddressingMode.Immediate) == 0xCD);
 }
 
 function runMemoryTests() {
@@ -400,6 +412,7 @@ function runMemoryTests() {
     testWriteWord();
     testLoadProgram();
     testGetOperandAddress();
+    testGetOperand();
 }
 
 runMemoryTests();
