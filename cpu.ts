@@ -4,6 +4,7 @@ class CPU {
     a: Uint8Array;
     x: Uint8Array;
     y: Uint8Array;
+    s: Uint8Array;
     flag: { c: boolean; z: boolean; i: boolean; d: boolean; b: boolean; v: boolean; n: boolean; };
 
     constructor() {
@@ -12,6 +13,7 @@ class CPU {
         this.a = new Uint8Array(1);
         this.x = new Uint8Array(1);
         this.y = new Uint8Array(1);
+        this.s = new Uint8Array(1); // stack pointer (stack is at 0x100 - 0x1FF, it grows downwards in memory, I.E. 0x1FF is bottom)
         this.flag = {
             c: false,
             z: false,
@@ -27,13 +29,14 @@ class CPU {
      * This "constructor" can be used for short-hand register assignment in testing.
      * Flags is a bit-field for simplicity. https://www.nesdev.org/wiki/Status_flags
      */
-    static newCPUwith(pc: number, a: number, x: number, y: number, flags: number): CPU {
+    static newCPUwith(pc: number, a: number, x: number, y: number, s: number, flags: number): CPU {
         let c = new CPU();
 
         c.pc[0] = pc;
         c.a[0] = a;
         c.x[0] = x;
         c.y[0] = y;
+        c.s[0] = s;
         c.flag = {
             c: (flags & 0b0000_0001) != 0,
             z: (flags & 0b0000_0010) != 0,
@@ -56,6 +59,7 @@ class CPU {
         console.assert(this.a[0] == other.a[0],     new Error(`CPU a register has '${toHex(this.a[0])}', not expected '${toHex(other.a[0])}'`).stack);
         console.assert(this.x[0] == other.x[0],     new Error(`CPU x register has '${toHex(this.x[0])}', not expected '${toHex(other.x[0])}'`).stack);
         console.assert(this.y[0] == other.y[0],     new Error(`CPU y register has '${toHex(this.y[0])}', not expected '${toHex(other.y[0])}'`).stack);
+        console.assert(this.s[0] == other.s[0],     new Error(`CPU s register has '${toHex(this.s[0])}', not expected '${toHex(other.s[0])}'`).stack);
         console.assert(this.flag.c == other.flag.c, new Error(`CPU flags.c register is ${this.flag.c}, not expected ${other.flag.c}`).stack);
         console.assert(this.flag.z == other.flag.z, new Error(`CPU flags.z register is ${this.flag.z}, not expected ${other.flag.z}`).stack);
         console.assert(this.flag.i == other.flag.i, new Error(`CPU flags.i register is ${this.flag.i}, not expected ${other.flag.i}`).stack);

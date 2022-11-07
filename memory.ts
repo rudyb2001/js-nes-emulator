@@ -9,7 +9,10 @@ enum AddressingMode {
     AbsoluteY,
     IndirectX,
     IndirectY,
-    NoAddressing
+    NoAddressing,
+    Accumulator // some operands have the accumulator as an "addressing mode" along with other possible operands -
+                // this is different than NoAddressing so Opcode.executeCurrent knows what operands
+                // to supply to the function pointer
 }
 
 /*
@@ -147,6 +150,7 @@ class MemoryMap {
                     return (this.readByte(addrPtr[1]) << 8) | (this.readByte(addrPtr[0]));
                 }
             case AddressingMode.NoAddressing:
+            case AddressingMode.Accumulator:
             default:
                 throw `Cannot retrieve address from addressing mode: ${addrMode}`;
                 break;
@@ -181,6 +185,9 @@ class MemoryMap {
                 cpu.pc[0] += 2;
                 return cpu.memoryMap.readWord(addr);
             }
+            default:
+                throw `Cannot retrieve operand from addressing mode: ${addrMode}`;
+                break;
         }
     }
 }
