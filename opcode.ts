@@ -50,6 +50,11 @@ class Opcode {
 
         0x90 : new Opcode(Opcode.BCC, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
 
+        0x24 : new Opcode(Opcode.BIT, 2, 3, false, false, AddressingMode.ZeroPage),
+        0x2C : new Opcode(Opcode.BIT, 3, 4, false, false, AddressingMode.Absolute),
+
+        0x00 : new Opcode(Opcode.BRK, 1, 7, false, false, AddressingMode.NoAddressing),
+
         0x18 : new Opcode(Opcode.CLC, 1, 2, false, false, AddressingMode.NoAddressing),
 
         0x48 : new Opcode(Opcode.PHA, 1, 3, false, false, AddressingMode.NoAddressing),
@@ -147,6 +152,48 @@ class Opcode {
     }
 
     /*
+     * BIT - BIt Test
+     *
+     * Performs an implicit bitwise of (operand & accumulator), and
+     * sets the zero flag if its result is zero (other than the zero flag, this
+     * bitwise and has no effect on the CPU nor memory). Bits 6 and 7 of the operand
+     * are copied to the overflow and negative flag, respectively.
+     */
+    static BIT(cpu: CPU, operand: number) {
+        let implicitAndResult = operand & cpu.a[0]; 
+
+        cpu.flag.z = (implicitAndResult == 0);
+        cpu.flag.n = (operand & 0b1000_0000) != 0;
+        cpu.flag.v = (operand & 0b0100_0000) != 0;
+    }
+
+    /*
+     * BRK - BReaK (force interrupt)
+     *
+     * The program counter and status register are pushed to the stack,
+     * and the IRQ interrupt vector (at 0xFFFE/F) is loaded into the PC,
+     * and the break flag is set to 0b11.
+     */
+    static BRK(cpu: CPU) {
+        cpu.pc[0]++; // the BRK instruction causes the pc to jump over the following byte
+                     // https://www.nesdev.org/the%20'B'%20flag%20&%20BRK%20instruction.txt
+                     // TODO verify that this is the correct functionality
+
+        let pcLowByte = cpu.pc[0] & 0x00FF;
+        let pcHighByte = (cpu.pc[0] & 0xFF00) >> 8;
+
+        // cpu.flag |= 0b0011_0000
+        cpu.flag.bLow = true;
+        cpu.flag.bHigh = true;
+
+        push(cpu, pcLowByte);
+        push(cpu, pcHighByte);
+        push(cpu, statusFlagsToByte(cpu));
+
+        cpu.pc[0] = cpu.memoryMap.readWord(0xFFFE);
+    }
+
+    /*
      * CLC - Clear Carry Flag
      *
      * Sets the carry flag to false.
@@ -169,6 +216,22 @@ class Opcode {
  *  ~ ~ ~ ~ ~ ~ OPCODE HELPERS ~ ~ ~ ~ ~ ~
  *  the following functions are general-use helpers for opcodes.
  */
+
+/*
+ * pushes a the given byte onto the given CPU's stack, decrementing the
+ * s register
+ */
+function push(cpu: CPU, b : number) {
+    cpu.memoryMap.writeByte(0x0100 + cpu.s[0]--, b);
+}
+
+/*
+ * pulls (pops) a byte from the CPU's stack, (incrementing the s register) and 
+ * returns it
+ */
+function pull(cpu: CPU): number {
+    return cpu.memoryMap.readByte(0x0100 + ++cpu.s[0]);
+}
 
 /*
  * returns true if n's sign-bit (bit 7) is clear
@@ -209,4 +272,40 @@ function i8AsNumber(i8: number): number {
     i8 += 1; // add one
 
     return -i8; // return -(positive representation)
+}
+
+/*
+ * returns an number whose 8 least-significant-bits represent the
+ * status flags of cpu, in the order: NVBB_DIZC
+ */
+function statusFlagsToByte(cpu: CPU): number {
+    let byte = 0;
+
+    if(cpu.flag.n)     byte |= 0b1000_0000;
+    if(cpu.flag.v)     byte |= 0b0100_0000;
+    if(cpu.flag.bHigh) byte |= 0b0010_0000;
+    if(cpu.flag.bLow)  byte |= 0b0001_0000;
+    if(cpu.flag.d)     byte |= 0b0000_1000;
+    if(cpu.flag.i)     byte |= 0b0000_0100;
+    if(cpu.flag.z)     byte |= 0b0000_0010;
+    if(cpu.flag.c)     byte |= 0b0000_0001;
+
+    return byte;
+}
+
+/*
+ * sets the given cpu's status flags based on the flags bit-field argument,
+ * which represents the status flags in the following order: NVBB_DIZC
+ */
+function loadStatusFlagsFromByte(cpu: CPU, flags: number) {
+    cpu.flag = {
+        c:     (flags & 0b0000_0001) != 0,
+        z:     (flags & 0b0000_0010) != 0,
+        i:     (flags & 0b0000_0100) != 0,
+        d:     (flags & 0b0000_1000) != 0,
+        bLow:  (flags & 0b0001_0000) != 0,
+        bHigh: (flags & 0b0010_0000) != 0,
+        v:     (flags & 0b0100_0000) != 0,
+        n:     (flags & 0b1000_0000) != 0
+    }
 }
