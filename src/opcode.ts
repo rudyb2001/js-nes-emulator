@@ -33,31 +33,35 @@ class Opcode {
     }
 
     static table = {
-        0x69 : new Opcode(Opcode.ADC, 2, 2, false, false, AddressingMode.Immediate),
-        0x65 : new Opcode(Opcode.ADC, 2, 3, false, false, AddressingMode.ZeroPage),
-        0x75 : new Opcode(Opcode.ADC, 2, 4, false, false, AddressingMode.ZeroPageX),
-        0x6D : new Opcode(Opcode.ADC, 3, 4, false, false, AddressingMode.Absolute),
-        0x7D : new Opcode(Opcode.ADC, 3, 4, true, false, AddressingMode.AbsoluteX),
-        0x79 : new Opcode(Opcode.ADC, 3, 4, true, false, AddressingMode.AbsoluteY),
-        0x61 : new Opcode(Opcode.ADC, 2, 6, false, false, AddressingMode.IndirectX),
-        0x71 : new Opcode(Opcode.ADC, 2, 5, true, false, AddressingMode.IndirectY),
+        0x69 : new Opcode(ADC, 2, 2, false, false, AddressingMode.Immediate),
+        0x65 : new Opcode(ADC, 2, 3, false, false, AddressingMode.ZeroPage),
+        0x75 : new Opcode(ADC, 2, 4, false, false, AddressingMode.ZeroPageX),
+        0x6D : new Opcode(ADC, 3, 4, false, false, AddressingMode.Absolute),
+        0x7D : new Opcode(ADC, 3, 4, true, false, AddressingMode.AbsoluteX),
+        0x79 : new Opcode(ADC, 3, 4, true, false, AddressingMode.AbsoluteY),
+        0x61 : new Opcode(ADC, 2, 6, false, false, AddressingMode.IndirectX),
+        0x71 : new Opcode(ADC, 2, 5, true, false, AddressingMode.IndirectY),
 
-        0x0A : new Opcode(Opcode.ASL, 1, 2, false, true, AddressingMode.Accumulator),
-        0x06 : new Opcode(Opcode.ASL, 2, 5, false, true, AddressingMode.ZeroPage),
-        0x16 : new Opcode(Opcode.ASL, 2, 6, false, true, AddressingMode.ZeroPageX),
-        0x0E : new Opcode(Opcode.ASL, 3, 6, false, true, AddressingMode.Absolute),
-        0x1E : new Opcode(Opcode.ASL, 3, 7, false, true, AddressingMode.AbsoluteX),
+        0x0A : new Opcode(ASL, 1, 2, false, true, AddressingMode.Accumulator),
+        0x06 : new Opcode(ASL, 2, 5, false, true, AddressingMode.ZeroPage),
+        0x16 : new Opcode(ASL, 2, 6, false, true, AddressingMode.ZeroPageX),
+        0x0E : new Opcode(ASL, 3, 6, false, true, AddressingMode.Absolute),
+        0x1E : new Opcode(ASL, 3, 7, false, true, AddressingMode.AbsoluteX),
 
-        0x90 : new Opcode(Opcode.BCC, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
+        0x90 : new Opcode(BCC, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
 
-        0x24 : new Opcode(Opcode.BIT, 2, 3, false, false, AddressingMode.ZeroPage),
-        0x2C : new Opcode(Opcode.BIT, 3, 4, false, false, AddressingMode.Absolute),
+        0x24 : new Opcode(BIT, 2, 3, false, false, AddressingMode.ZeroPage),
+        0x2C : new Opcode(BIT, 3, 4, false, false, AddressingMode.Absolute),
 
-        0x00 : new Opcode(Opcode.BRK, 1, 7, false, false, AddressingMode.NoAddressing),
+        0x00 : new Opcode(BRK, 1, 7, false, false, AddressingMode.NoAddressing),
 
-        0x18 : new Opcode(Opcode.CLC, 1, 2, false, false, AddressingMode.NoAddressing),
+        0x18 : new Opcode(CLC, 1, 2, false, false, AddressingMode.NoAddressing),
 
-        0x48 : new Opcode(Opcode.PHA, 1, 3, false, false, AddressingMode.NoAddressing),
+        0xE0 : new Opcode(CPX, 2, 2, false, false, AddressingMode.Immediate),
+        0xE4 : new Opcode(CPX, 2, 3, false, false, AddressingMode.ZeroPage),
+        0xEC : new Opcode(CPX, 3, 4, false, false, AddressingMode.Absolute),
+
+        0x48 : new Opcode(PHA, 1, 3, false, false, AddressingMode.NoAddressing),
     }
 
     /*
@@ -94,121 +98,6 @@ class Opcode {
                 opc.fn(cpu, operand); // all other read instructions have a single operand parameter, no-return value function
             }
         }
-    }
-
-    /*
-     * ADC - ADd with Carry
-     *
-     * Stores (operand + carry flag + accumulator) into the accumulator.
-     */
-    static ADC(cpu: CPU, operand: number) {
-        let result = 0; // number
-        let a1 = cpu.a[0]; // need to remember a's initial value when checking for overflow
-        result += operand;
-        result += cpu.a[0];
-        result += (cpu.flag.c ? 1 : 0);
-
-        // place result in the accumulator
-        cpu.a[0] = result;
-
-        // udpate flags
-        // to check for overflow, we consider overflow in (smaller + carry), then (smaller + carry + larger)
-        let smaller = Math.min(operand, a1);
-        let larger = Math.max(operand, a1);
-        cpu.flag.v = smaller == 0b0111_1111 && cpu.flag.c || // (smaller + carry) overflows ?
-                     testOverflow(smaller + (cpu.flag.c ? 1 : 0), larger, cpu.a[0]); // overflow with entire addition
-        cpu.flag.c = (result & 0b1_0000_0000) != 0;
-        cpu.flag.z = u8Add(result, 0) == 0; // result as u8 == 0
-        cpu.flag.n = (result & 0b1000_0000) != 0;
-    }
-
-    /*
-     * ASL - Arithmetic Shift Left
-     *
-     * Shifts the operand one bit to the left, setting the new 0-bit to 0.
-     */
-    static ASL(cpu: CPU, operand: number): number {
-        let result = u8Add(0, operand << 1);
-
-        // update flags
-        cpu.flag.c = (operand & 0b1000_0000) != 0; // value of shifted-out bit
-        cpu.flag.z = result == 0;
-        cpu.flag.n = (result & 0b1000_0000) != 0; // value of sign bit of result
-
-        return result;
-    }
-
-    /*
-     * BCC - Branch if Carry is Clear
-     *
-     * adds the given i8 (signed) offset to the pc if the carry flag is false
-     */
-    static BCC(cpu: CPU, operand: number) {
-        if(cpu.flag.c) return; // don't branch if carry is set
-
-        cpu.pc[0] -= 2; // move pc back to the beginning of this instruction so offset is correct
-
-        cpu.pc[0] += i8AsNumber(operand);
-    }
-
-    /*
-     * BIT - BIt Test
-     *
-     * Performs an implicit bitwise of (operand & accumulator), and
-     * sets the zero flag if its result is zero (other than the zero flag, this
-     * bitwise and has no effect on the CPU nor memory). Bits 6 and 7 of the operand
-     * are copied to the overflow and negative flag, respectively.
-     */
-    static BIT(cpu: CPU, operand: number) {
-        let implicitAndResult = operand & cpu.a[0]; 
-
-        cpu.flag.z = (implicitAndResult == 0);
-        cpu.flag.n = (operand & 0b1000_0000) != 0;
-        cpu.flag.v = (operand & 0b0100_0000) != 0;
-    }
-
-    /*
-     * BRK - BReaK (force interrupt)
-     *
-     * The program counter and status register are pushed to the stack,
-     * and the IRQ interrupt vector (at 0xFFFE/F) is loaded into the PC,
-     * and the break flag is set to 0b11.
-     */
-    static BRK(cpu: CPU) {
-        cpu.pc[0]++; // the BRK instruction causes the pc to jump over the following byte
-                     // https://www.nesdev.org/the%20'B'%20flag%20&%20BRK%20instruction.txt
-                     // TODO verify that this is the correct functionality
-
-        let pcLowByte = cpu.pc[0] & 0x00FF;
-        let pcHighByte = (cpu.pc[0] & 0xFF00) >> 8;
-
-        // cpu.flag |= 0b0011_0000
-        cpu.flag.bLow = true;
-        cpu.flag.bHigh = true;
-
-        push(cpu, pcLowByte);
-        push(cpu, pcHighByte);
-        push(cpu, statusFlagsToByte(cpu));
-
-        cpu.pc[0] = cpu.memoryMap.readWord(0xFFFE);
-    }
-
-    /*
-     * CLC - Clear Carry Flag
-     *
-     * Sets the carry flag to false.
-     */
-    static CLC(cpu: CPU) {
-        cpu.flag.c = false;
-    }
-
-    /*
-     * PHA - PusH Accumulator
-     *
-     * Pushes the accumulator to the stack.
-     */
-    static PHA(cpu: CPU) {
-        cpu.memoryMap.writeByte(0x0100 + cpu.s[0]--, cpu.a[0]);
     }
 }
 
