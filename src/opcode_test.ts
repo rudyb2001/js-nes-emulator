@@ -146,6 +146,14 @@ function testU8IsPositive() {
     }
 }
 
+function testU8IsNegative() {
+    let testcases = Int8Array.from([100, 3, 50, 127, -128, -127, -1, -40, 0]);
+
+    for(let i = 0; i < testcases.length; i++) {
+        console.assert(u8IsPositive(testcases[i]) == testcases[i] >= 0);
+    }
+}
+
 function testTestOverflow() {
     console.assert(testOverflow(0x40, 0x20, u8Add(0x40, 0x20)) == false);
     console.assert(testOverflow(0x40, 0x40, u8Add(0x40, 0x40)) == true);
@@ -224,6 +232,7 @@ function runOpcodeTests() {
     testPush();
     testPull();
     testU8IsPositive();
+    testU8IsNegative();
     testTestOverflow();
     testU8Add();
     testI8AsNumber();
@@ -232,7 +241,7 @@ function runOpcodeTests() {
 
     // Opcode function testers below
     testADC();
-    // testAND();
+    testAND();
     testASL();
     testBCC();
     // testBCS();
@@ -248,13 +257,13 @@ function runOpcodeTests() {
     // testCLD();
     // testCLI();
     // testCLV();
-    // testCMP();
+    testCMP();
     testCPX();
     // testCPY();
-    // testDEC();
+    testDEC();
     // testDEX();
     // testDEY();
-    // testEOR();
+    testEOR();
     // testINC();
     // testINX();
     // testINY();
@@ -263,18 +272,18 @@ function runOpcodeTests() {
     // testLDA();
     // testLDX();
     // testLDY();
-    // testLSR();
+    testLSR();
     // testNOP();
-    // testORA();
+    testORA();
     testPHA();
     // testPHP();
     // testPLA();
     // testPLP();
-    // testROL();
-    // testROR();
+    testROL();
+    testROR();
     // testRTI();
     // testRTS();
-    // testSBC();
+    testSBC();
     // testSEC();
     // testSED();
     // testSEI();

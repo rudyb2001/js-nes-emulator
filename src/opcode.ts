@@ -42,6 +42,15 @@ class Opcode {
         0x61 : new Opcode(ADC, 2, 6, false, false, AddressingMode.IndirectX),
         0x71 : new Opcode(ADC, 2, 5, true, false, AddressingMode.IndirectY),
 
+        0x29 : new Opcode(AND, 2, 2, false, false, AddressingMode.Immediate),
+        0x25 : new Opcode(AND, 2, 3, false, false, AddressingMode.ZeroPage),
+        0x35 : new Opcode(AND, 2, 4, false, false, AddressingMode.ZeroPageX),
+        0x2D : new Opcode(AND, 3, 4, false, false, AddressingMode.Absolute),
+        0x3D : new Opcode(AND, 3, 4, true, false, AddressingMode.AbsoluteX),
+        0x39 : new Opcode(AND, 3, 4, true, false, AddressingMode.AbsoluteY),
+        0x21 : new Opcode(AND, 2, 6, false, false, AddressingMode.IndirectX),
+        0x31 : new Opcode(AND, 2, 5, true, false, AddressingMode.IndirectY),
+
         0x0A : new Opcode(ASL, 1, 2, false, true, AddressingMode.Accumulator),
         0x06 : new Opcode(ASL, 2, 5, false, true, AddressingMode.ZeroPage),
         0x16 : new Opcode(ASL, 2, 6, false, true, AddressingMode.ZeroPageX),
@@ -57,11 +66,70 @@ class Opcode {
 
         0x18 : new Opcode(CLC, 1, 2, false, false, AddressingMode.NoAddressing),
 
+        0xC9 : new Opcode(CMP, 2, 2, false, false, AddressingMode.Immediate),
+        0xC5 : new Opcode(CMP, 2, 3, false, false, AddressingMode.ZeroPage),
+        0xD5 : new Opcode(CMP, 2, 4, false, false, AddressingMode.ZeroPageX),
+        0xCD : new Opcode(CMP, 3, 4, false, false, AddressingMode.Absolute),
+        0xDD : new Opcode(CMP, 3, 4, true, false, AddressingMode.AbsoluteX),
+        0xD9 : new Opcode(CMP, 3, 4, true, false, AddressingMode.AbsoluteY),
+        0xC1 : new Opcode(CMP, 2, 6, false, false, AddressingMode.IndirectX),
+        0xD1 : new Opcode(CMP, 2, 5, true, false, AddressingMode.IndirectY),
+
         0xE0 : new Opcode(CPX, 2, 2, false, false, AddressingMode.Immediate),
         0xE4 : new Opcode(CPX, 2, 3, false, false, AddressingMode.ZeroPage),
         0xEC : new Opcode(CPX, 3, 4, false, false, AddressingMode.Absolute),
 
+        0xC6 : new Opcode(DEC, 2, 5, false, true, AddressingMode.ZeroPage),
+        0xD6 : new Opcode(DEC, 2, 6, false, true, AddressingMode.ZeroPageX),
+        0xCE : new Opcode(DEC, 3, 6, false, true, AddressingMode.Absolute),
+        0xDE : new Opcode(DEC, 3, 7, false, true, AddressingMode.AbsoluteX),
+
+        0x49 : new Opcode(EOR, 2, 2, false, false, AddressingMode.Immediate),
+        0x45 : new Opcode(EOR, 2, 3, false, false, AddressingMode.ZeroPage),
+        0x55 : new Opcode(EOR, 2, 4, false, false, AddressingMode.ZeroPageX),
+        0x4D : new Opcode(EOR, 3, 4, false, false, AddressingMode.Absolute),
+        0x5D : new Opcode(EOR, 3, 4, true, false, AddressingMode.AbsoluteX),
+        0x59 : new Opcode(EOR, 3, 4, true, false, AddressingMode.AbsoluteY),
+        0x41 : new Opcode(EOR, 2, 6, false, false, AddressingMode.IndirectX),
+        0x51 : new Opcode(EOR, 2, 5, true, false, AddressingMode.IndirectY),
+
+        0x4A : new Opcode(LSR, 1, 2, false, true, AddressingMode.Accumulator),
+        0x46 : new Opcode(LSR, 2, 5, false, true, AddressingMode.ZeroPage),
+        0x56 : new Opcode(LSR, 2, 6, false, true, AddressingMode.ZeroPageX),
+        0x4E : new Opcode(LSR, 3, 6, false, true, AddressingMode.Absolute),
+        0x5E : new Opcode(LSR, 3, 7, false, true, AddressingMode.AbsoluteX),
+
+        0x09 : new Opcode(ORA, 2, 2, false, false, AddressingMode.Immediate),
+        0x05 : new Opcode(ORA, 2, 3, false, false, AddressingMode.ZeroPage),
+        0x15 : new Opcode(ORA, 2, 4, false, false, AddressingMode.ZeroPageX),
+        0x0D : new Opcode(ORA, 3, 4, false, false, AddressingMode.Absolute),
+        0x1D : new Opcode(ORA, 3, 4, true, false, AddressingMode.AbsoluteX),
+        0x19 : new Opcode(ORA, 3, 4, true, false, AddressingMode.AbsoluteY),
+        0x01 : new Opcode(ORA, 2, 6, false, false, AddressingMode.IndirectX),
+        0x11 : new Opcode(ORA, 2, 5, true, false, AddressingMode.IndirectY),
+
         0x48 : new Opcode(PHA, 1, 3, false, false, AddressingMode.NoAddressing),
+
+        0x2A : new Opcode(ROL, 1, 2, false, true, AddressingMode.Accumulator),
+        0x26 : new Opcode(ROL, 2, 5, false, true, AddressingMode.ZeroPage),
+        0x36 : new Opcode(ROL, 2, 6, false, true, AddressingMode.ZeroPageX),
+        0x2E : new Opcode(ROL, 3, 6, false, true, AddressingMode.Absolute),
+        0x3E : new Opcode(ROL, 3, 7, false, true, AddressingMode.AbsoluteX),
+
+        0x6A : new Opcode(ROR, 1, 2, false, true, AddressingMode.Accumulator),
+        0x66 : new Opcode(ROR, 2, 5, false, true, AddressingMode.ZeroPage),
+        0x76 : new Opcode(ROR, 2, 6, false, true, AddressingMode.ZeroPageX),
+        0x6E : new Opcode(ROR, 3, 6, false, true, AddressingMode.Absolute),
+        0x7E : new Opcode(ROR, 3, 7, false, true, AddressingMode.AbsoluteX),
+
+        0xE9 : new Opcode(SBC, 2, 2, false, false, AddressingMode.Immediate),
+        0xE5 : new Opcode(SBC, 2, 3, false, false, AddressingMode.ZeroPage),
+        0xF5 : new Opcode(SBC, 2, 4, false, false, AddressingMode.ZeroPageX),
+        0xED : new Opcode(SBC, 3, 4, false, false, AddressingMode.Absolute),
+        0xFD : new Opcode(SBC, 3, 4, true, false, AddressingMode.AbsoluteX),
+        0xF9 : new Opcode(SBC, 3, 4, true, false, AddressingMode.AbsoluteY),
+        0xE1 : new Opcode(SBC, 2, 6, false, false, AddressingMode.IndirectX),
+        0xF1 : new Opcode(SBC, 2, 5, true, false, AddressingMode.IndirectY),
     }
 
     /*
@@ -127,6 +195,13 @@ function pull(cpu: CPU): number {
  */
 function u8IsPositive(n: number) {
     return (n & 0b1000_0000) == 0;
+}
+
+/*
+ * returns true if n's sign-bit (bit 7) is set
+ */
+function u8IsNegative(n: number) {
+    return (n & 0b1000_0000) != 0;
 }
 
 /*
