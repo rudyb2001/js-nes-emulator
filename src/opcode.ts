@@ -59,8 +59,22 @@ class Opcode {
 
         0x90 : new Opcode(BCC, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
 
+        0xB0 : new Opcode(BCS, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
+
+        0xF0 : new Opcode(BEQ, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
+
         0x24 : new Opcode(BIT, 2, 3, false, false, AddressingMode.ZeroPage),
         0x2C : new Opcode(BIT, 3, 4, false, false, AddressingMode.Absolute),
+
+        0x30 : new Opcode(BMI, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
+
+        0xD0 : new Opcode(BNE, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
+
+        0x10 : new Opcode(BPL, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
+
+        0x50 : new Opcode(BVC, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
+
+        0x70 : new Opcode(BVS, 2, 2, true, false, AddressingMode.Immediate), // TODO cycles are more complicated for some instructions
 
         0x00 : new Opcode(BRK, 1, 7, false, false, AddressingMode.NoAddressing),
 
@@ -93,6 +107,15 @@ class Opcode {
         0x41 : new Opcode(EOR, 2, 6, false, false, AddressingMode.IndirectX),
         0x51 : new Opcode(EOR, 2, 5, true, false, AddressingMode.IndirectY),
 
+        0x4C : new Opcode(JMP, 3, 3, false, false, AddressingMode.ImmediateWord), // the docs say "Absolute" and "Indirect" in the place of
+        0x6C : new Opcode(JMP, 3, 5, false, false, AddressingMode.AbsoluteWord),  // "ImmediateWord" and "AbsoluteWord" (respectively), but  
+                                                                                  // since we pass operands by value instead of pointer, 
+                                                                                  // JMP is supplied *(addr) instead of (addr). Adjusting 
+                                                                                  // the addressing mode fixes this.
+
+
+        0x20 : new Opcode(JSR, 3, 6, false, false, AddressingMode.ImmediateWord),
+
         0x4A : new Opcode(LSR, 1, 2, false, true, AddressingMode.Accumulator),
         0x46 : new Opcode(LSR, 2, 5, false, true, AddressingMode.ZeroPage),
         0x56 : new Opcode(LSR, 2, 6, false, true, AddressingMode.ZeroPageX),
@@ -121,6 +144,8 @@ class Opcode {
         0x76 : new Opcode(ROR, 2, 6, false, true, AddressingMode.ZeroPageX),
         0x6E : new Opcode(ROR, 3, 6, false, true, AddressingMode.Absolute),
         0x7E : new Opcode(ROR, 3, 7, false, true, AddressingMode.AbsoluteX),
+
+        0x60 : new Opcode(RTS, 1, 6, false, false, AddressingMode.NoAddressing),
 
         0xE9 : new Opcode(SBC, 2, 2, false, false, AddressingMode.Immediate),
         0xE5 : new Opcode(SBC, 2, 3, false, false, AddressingMode.ZeroPage),
@@ -183,11 +208,35 @@ function push(cpu: CPU, b : number) {
 }
 
 /*
+ * Pushes the given word onto the CPU's stack, decrementing the s
+ * register accordingly.
+ */
+function pushWord(cpu: CPU, w : number) {
+    // push big byte, then little byte
+    let bigByte = w >> 8;
+    let littleByte = w & 0b1111_1111;
+
+    push(cpu, bigByte);
+    push(cpu, littleByte);
+}
+
+/*
  * pulls (pops) a byte from the CPU's stack, (incrementing the s register) and 
  * returns it
  */
 function pull(cpu: CPU): number {
     return cpu.memoryMap.readByte(0x0100 + ++cpu.s[0]);
+}
+
+/*
+ * pulls (pops) a word from the CPU's stack, (incrementing the s register) and 
+ * returns it
+ */
+function pullWord(cpu: CPU): number {
+    let littleByte = pull(cpu);
+    let bigByte = pull(cpu);
+
+    return (bigByte << 8) | littleByte;
 }
 
 /*

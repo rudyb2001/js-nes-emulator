@@ -10,9 +10,16 @@ enum AddressingMode {
     IndirectX,
     IndirectY,
     NoAddressing,
-    Accumulator // some operands have the accumulator as an "addressing mode" along with other possible operands -
-                // this is different than NoAddressing so Opcode.executeCurrent knows what operands
-                // to supply to the function pointer
+    Accumulator, // some operands have the accumulator as an "addressing mode" along with other possible operands -
+                 // this is different than NoAddressing so Opcode.executeCurrent knows what operands
+                 // to supply to the function pointer
+    
+    ImmediateWord, // these are only used for the JMP and JSR instructions; a consequence of passing operands by value instead
+    AbsoluteWord,  // of reference is that we can't use the address itself when we want to; as a result, we can't use
+                   // AddressingMode.Absolute to read an immediately-supplied address, since the address itself
+                   // won't be supplied to the opcode's function; the data AT that address will be.
+                   // NOTE: when implementing a opcode-to-assembly-text translator, these two can be considered
+                   // aliases to Absolute and Indirect, respectively.
 }
 
 /*
@@ -93,11 +100,13 @@ class MemoryMap {
 
     /* 
      * returns a 16-bit address of the data referred to by the given &cpu and addrMode
+     * (assumes pc is pointing to the byte immediately following the opcode's byte)
      * https://www.nesdev.org/obelisk-6502-guide/addressing.html#IDX
      */
     getOperandAddress(cpu: CPU, addrMode: AddressingMode): number {
         switch(addrMode) {
             case AddressingMode.Immediate: // Immediate: value is in executable memory, program counter pointing to it
+            case AddressingMode.ImmediateWord:
                 {
                     return cpu.pc[0];
                 }
@@ -120,6 +129,7 @@ class MemoryMap {
                     return addr[0];
                 }
             case AddressingMode.Absolute: // Absolute: instruction param is a pointer to a memory address
+            case AddressingMode.AbsoluteWord:
                 {
                     return this.readWord(cpu.pc[0]);
                 }
@@ -181,10 +191,13 @@ class MemoryMap {
             case AddressingMode.Absolute:
             case AddressingMode.AbsoluteX:
             case AddressingMode.AbsoluteY:
+            case AddressingMode.ImmediateWord:
+            case AddressingMode.AbsoluteWord:
             { // 16-bit addressing modes
                 cpu.pc[0] += 2;
                 return cpu.memoryMap.readWord(addr);
             }
+
             default:
                 throw `Cannot retrieve operand from addressing mode: ${addrMode}`;
                 break;

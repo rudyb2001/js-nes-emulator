@@ -380,6 +380,31 @@ function testGetOperandAddress() {
         console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.IndirectY) == 0x349A);
     }
 
+    { // immediate word
+        let c = new CPU();
+
+        for(let i = 0x8000; i < 0x10000; i++) {
+            c.pc[0] = i;
+            console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.ImmediateWord) == i);
+        }
+    }
+
+    { // absolute word
+        let c = new CPU();
+
+        let prog = Uint8Array.from([0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF]);
+        c.memoryMap.loadProgram(prog);
+
+        c.pc[0] = 0x8000;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteWord) == 0x3412);
+        c.pc[0]++;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteWord) == 0x5634);
+        c.pc[0]++;
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteWord) == 0x7856);
+        c.pc[0] = 0x8000 + prog.length - 1; // last index of prog
+        console.assert(c.memoryMap.getOperandAddress(c, AddressingMode.AbsoluteWord) == 0x12EF);
+    }
+
     { // no addressing
         let c = new CPU();
         try {

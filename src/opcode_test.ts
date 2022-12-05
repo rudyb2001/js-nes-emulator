@@ -118,6 +118,25 @@ function testPush() {
     console.assert(c.memoryMap.readByte(0x0100) == 0x99);
 }
 
+function testPushWord() {
+    let c = new CPU();
+    pushWord(c, 0xABCD);
+    console.assert(c.s[0] == 0xFD);
+    console.assert(c.memoryMap.readWord(0x01FE) == 0xABCD);
+
+    pushWord(c, 0xCDEF);
+    console.assert(c.s[0] == 0xFB);
+    console.assert(c.memoryMap.readWord(0x01FC) == 0xCDEF);
+
+    // stack overflow expected behavior
+    c.s[0] = 0x00;
+
+    pushWord(c, 0x9988);
+    console.assert(c.s[0] == 0xFE);
+    console.assert(c.memoryMap.readByte(0x0100) == 0x99);
+    console.assert(c.memoryMap.readByte(0x01FF) == 0x88);
+}
+
 function testPull() {
     let c = new CPU();
 
@@ -135,6 +154,25 @@ function testPull() {
     console.assert(pull(c) == 0xEF);
     console.assert(pull(c) == 0x12);
     console.assert(pull(c) == 0x34);
+    console.assert(c.s[0] == 0xFF);
+}
+
+function testPullWord() {
+    let c = new CPU();
+
+    c.memoryMap.writeByte(0x01FF, 0x34);
+    c.memoryMap.writeByte(0x01FE, 0x12);
+    c.memoryMap.writeByte(0x01FD, 0xEF);
+    c.memoryMap.writeByte(0x01FC, 0xCD);
+    c.memoryMap.writeByte(0x01FB, 0xAB);
+
+    c.s[0] = 0xF9;
+
+    console.assert(pullWord(c) == 0xAB00);
+    console.assert(c.s[0] == 0xFB);
+    console.assert(pullWord(c) == 0xEFCD);
+    console.assert(c.s[0] == 0xFD);
+    console.assert(pullWord(c) == 0x3412);
     console.assert(c.s[0] == 0xFF);
 }
 
@@ -231,6 +269,8 @@ function runOpcodeTests() {
     testExecuteCurrent();
     testPush();
     testPull();
+    testPushWord();
+    testPullWord();
     testU8IsPositive();
     testU8IsNegative();
     testTestOverflow();
@@ -244,15 +284,15 @@ function runOpcodeTests() {
     testAND();
     testASL();
     testBCC();
-    // testBCS();
-    // testBEQ();
+    testBCS();
+    testBEQ();
     testBIT();
-    // testBMI();
-    // testBNE();
-    // testBPL();
+    testBMI();
+    testBNE();
+    testBPL();
     testBRK();
-    // testBVC();
-    // testBVS();
+    testBVC();
+    testBVS();
     testCLC();
     // testCLD();
     // testCLI();
@@ -267,8 +307,8 @@ function runOpcodeTests() {
     // testINC();
     // testINX();
     // testINY();
-    // testJMP();
-    // testJSR();
+    testJMP();
+    testJSR();
     // testLDA();
     // testLDX();
     // testLDY();
@@ -281,8 +321,8 @@ function runOpcodeTests() {
     // testPLP();
     testROL();
     testROR();
-    // testRTI();
-    // testRTS();
+    //  testRTI();
+    testRTS();
     testSBC();
     // testSEC();
     // testSED();
