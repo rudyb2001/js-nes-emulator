@@ -32,9 +32,11 @@ enum AddressingMode {
 class MemoryMap {
     memory: Uint8Array;
     program: Uint8Array;
+    ppu: PPU;
 
-    constructor() {
-        this.memory = new Uint8Array(0x0800);
+    constructor(size?: number) {
+        this.memory = new Uint8Array(size || 0x800);
+        this.ppu = new PPU();
     }
 
     // returns the byte at the memory map's address addr. 
@@ -42,8 +44,10 @@ class MemoryMap {
         if(0x0000 <= addr && addr < 0x2000) { // memory (RAM)
             return this.memory[addr % 0x0800]; // 0x0000-0x08000 are mirrored over this range
         } else if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
-            // TODO add support for io registers and mirroring
-            throw "TODO: implement PPU/IO register access";
+            let val = this.accessMemoryMappedRegister(addr, 0, true);
+            if (val === null)
+                throw "ERROR: access memory mapped registers returned null";
+            return val;
         } else if(0x4020 <= addr && addr < 0x8000) { // unsupported 
             throw `Address ${addr} is in unsupported CPU addressing range! 0x4020 - 0x7FFF`
         } else if (0x8000 <= addr && addr <= 0xFFFF) { // cartdrige ROM
@@ -66,8 +70,7 @@ class MemoryMap {
         if(0x0000 <= addr && addr < 0x2000) { // memory (RAM)
             this.memory[addr % 0x0800] = b; // 0x0000-0x08000 are mirrored over this range
         } else if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
-            // TODO add support for io registers and mirroring
-            throw "TODO: implement PPU/IO register modification";
+            let status = this.accessMemoryMappedRegister(addr, b, false);
         } else if(0x4020 <= addr && addr < 0x8000) { // unsupported 
             throw `Address ${addr} is in unsupported CPU addressing range! 0x4020 - 0x7FFF`
         } else if (0x8000 <= addr && addr <= 0xFFFF) { // cartdrige ROM
@@ -84,6 +87,41 @@ class MemoryMap {
 
         this.writeByte(addr, lowByte);
         this.writeByte(addr + 1, highByte);
+    }
+
+    accessMemoryMappedRegister(addr: number, byte: number, read: boolean): number {
+        // Check write-only registers
+        if (read && (addr === 0x2000 || addr == 0x2001 || addr == 0x2005)) {
+            throw `ERROR in MemoryMap, accessMemoryMappedRegister: reading from write-only register ${addr}`;
+        }
+
+        // PPU Memory Map Data (0x2007) and Address (0x2006) registers
+        if (addr == 0x2006) {
+            if (read) { throw "ERROR in MemoryMap, undefined read operation to 0x2006" }
+            // pass in address to PPU?
+            this.ppu.putAddressByte(byte);
+            return null;
+        }
+
+        if (addr == 0x2007) {
+            if (read)  {
+                return this.ppu.getData();
+            } else {
+                this.ppu.setData(byte);
+                return null;
+            }
+        }
+
+        // Read-only status register
+        if (addr == 0x2002) {
+            if (!read) throw "ERROR in MemoryMap, write operation to read-only register 0x2002";
+
+            return this.ppu.getStatus();
+        }
+
+        throw "TODO: undefined behavior for memory mapped registers";
+
+        return null;
     }
 
     // loads program, a Uint8Array, into the rom area of "memory"
