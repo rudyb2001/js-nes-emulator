@@ -43,14 +43,20 @@ class MemoryMap {
     readByte(addr: number): number {
         if(0x0000 <= addr && addr < 0x2000) { // memory (RAM)
             return this.memory[addr % 0x0800]; // 0x0000-0x08000 are mirrored over this range
-        } else if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
+        }
+        
+        if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
             let val = this.accessMemoryMappedRegister(addr, 0, true);
             if (val === null)
                 throw "ERROR: access memory mapped registers returned null";
             return val;
-        } else if(0x4020 <= addr && addr < 0x8000) { // unsupported 
+        }
+        
+        if(0x4020 <= addr && addr < 0x8000) { // unsupported 
             throw `Address ${addr} is in unsupported CPU addressing range! 0x4020 - 0x7FFF`
-        } else if (0x8000 <= addr && addr <= 0xFFFF) { // cartdrige ROM
+        }
+        
+        if (0x8000 <= addr && addr <= 0xFFFF) { // cartdrige ROM
             // TODO implement mapping? (mapper 0 should have the same behavior as "no mapping"? (mirror over whole range))
             if(this.program == null) throw `cannot read address ${addr} in ROM because no program is loaded!`
             return this.program[(addr - 0x8000) % this.program.length]; // mirror the ROM over this range
@@ -69,16 +75,24 @@ class MemoryMap {
     writeByte(addr: number, b: number): void {
         if(0x0000 <= addr && addr < 0x2000) { // memory (RAM)
             this.memory[addr % 0x0800] = b; // 0x0000-0x08000 are mirrored over this range
-        } else if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
+            return;
+        }
+        
+        if(0x2000 <= addr && addr < 0x4020) { // PPI/IO
             let status = this.accessMemoryMappedRegister(addr, b, false);
-        } else if(0x4020 <= addr && addr < 0x8000) { // unsupported 
+            return;
+        }
+        
+        if(0x4020 <= addr && addr < 0x8000) { // unsupported 
             throw `Address ${addr} is in unsupported CPU addressing range! 0x4020 - 0x7FFF`
-        } else if (0x8000 <= addr && addr <= 0xFFFF) { // cartdrige ROM
+        }
+        
+        if (0x8000 <= addr && addr <= 0xFFFF) { // cartdrige ROM
             // TODO add support for mappers (which allow "writing" to ROM)
             throw `Cannot write at ROM address ${addr}`;
-        } else {
-            throw `address ${addr} is out of memory map's bounds!`;
         }
+        
+        throw `address ${addr} is out of memory map's bounds!`;
     }
 
     writeWord(addr: number, w: number): void {
@@ -164,7 +178,7 @@ class MemoryMap {
             case AddressingMode.AbsoluteX: // Absolute mode but add contents of register x
                 {
                     let addr = new Uint16Array(1);
-                    addr[0] = this.readWord(cpu.pc[0]) + cpu.x[0]; 
+                    addr[0] = this.readWord(cpu.pc[0]) + cpu.x[0];
                     return addr[0];
                 }
             case AddressingMode.AbsoluteY: // Absolute mode but add contents of register y
